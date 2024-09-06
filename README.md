@@ -1,6 +1,6 @@
 # Azure OpenAI Chat Demo
 
-This project demonstrates how to create an interactive chat session using Azure OpenAI and Azure Cognitive Search. The chat session allows users to input queries and receive responses from the AI, with the ability to handle rate limit errors gracefully.
+This project demonstrates how to create an interactive chat session using Azure OpenAI and Azure Cognitive Search. The chat session allows users to input queries and receive responses from the AI, with the ability to handle rate limit errors gracefully. The script requires Azure Blob Storage connected to your Azure AI model deployment, and the base model used here is GPT-4.
 
 ## Features
 
@@ -14,6 +14,7 @@ This project demonstrates how to create an interactive chat session using Azure 
 - Python 3.6 or higher
 - Azure OpenAI API key
 - Azure Cognitive Search endpoint and key
+- Azure Blob Storage account and container
 
 ## Setup
 
@@ -42,6 +43,42 @@ This project demonstrates how to create an interactive chat session using Azure 
     SEARCH_KEY=your-search-key
     AZURE_OPENAI_API_KEY=your-openai-api-key
     ```
+
+## Setting Up Azure Blob Storage
+
+To use this script, you need to have Azure Blob Storage connected to your Azure AI model deployment. Follow these steps to set it up:
+
+1. **Create an Azure Storage Account:**
+    - Go to the [Azure Portal](https://portal.azure.com/).
+    - Create a new Storage Account.
+    - Note down the Storage Account name and key.
+
+2. **Create a Blob Container:**
+    - In your Storage Account, create a new Blob Container.
+    - Upload your data files to this container.
+
+3. **Add Blob Storage details to `.env` file:**
+    ```env
+    AZURE_STORAGE_ACCOUNT_NAME=your-storage-account-name
+    AZURE_STORAGE_ACCOUNT_KEY=your-storage-account-key
+    AZURE_BLOB_CONTAINER_NAME=your-blob-container-name
+    ```
+
+## Creating the Model through Azure AI Studio
+
+1. **Access Azure AI Studio:**
+    - Go to the [Azure AI Studio](https://studio.azure.com/).
+
+2. **Create a New Project:**
+    - Create a new project and select the appropriate AI service (e.g., Azure OpenAI).
+
+3. **Upload Data and Train Model:**
+    - Upload your data from Azure Blob Storage.
+    - Train your model using the provided tools and configurations. The base model used here is GPT-4.
+
+4. **Deploy the Model:**
+    - Once the model is trained, deploy it to get an endpoint and API key.
+    - Update your `.env` file with the new endpoint and API key if different from the initial setup.
 
 ## Usage
 
