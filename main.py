@@ -14,10 +14,10 @@ class AzureOpenAIChat:
         load_dotenv()
         
         # Initialize configuration from environment variables
-        self.endpoint = os.getenv("ENDPOINT_URL", "https://test-bid-bot.openai.azure.com/")
-        self.deployment = os.getenv("DEPLOYMENT_NAME", "test-bot")
-        self.search_endpoint = os.getenv("SEARCH_ENDPOINT", "https://testchatbot.search.windows.net")
-        self.search_key = os.getenv("SEARCH_KEY", "put your Azure AI Search admin key here")
+        self.endpoint = os.getenv("ENDPOINT_URL")
+        self.deployment = os.getenv("DEPLOYMENT_NAME")
+        self.search_endpoint = os.getenv("SEARCH_ENDPOINT")
+        self.search_key = os.getenv("SEARCH_KEY")
         self.api_key = os.getenv("AZURE_OPENAI_API_KEY")
         
         # Create the OpenAI client
@@ -49,7 +49,7 @@ class AzureOpenAIChat:
                         "role": "user",
                         "content": user_message
                     }],
-                    max_tokens=800,
+                    max_tokens=5000,
                     temperature=0,
                     top_p=1,
                     frequency_penalty=0,
@@ -112,6 +112,7 @@ def main():
     """
     Create an instance of AzureOpenAIChat and start the chat session.
     """
+    print("Azure OpenAI Chat Demo Staring...")
     chat = AzureOpenAIChat()
     chat.start_chat()
 
