@@ -49,7 +49,7 @@ class AzureOpenAIChat:
                         "role": "user",
                         "content": user_message
                     }],
-                    max_tokens=5000,
+                    max_tokens=4096,
                     temperature=0,
                     top_p=1,
                     frequency_penalty=0,
@@ -78,11 +78,11 @@ class AzureOpenAIChat:
                         }]
                     }
                 )
-            except openai.error.RateLimitError as e:
+            except openai.RateLimitError as e:
                 print(f"Rate limit exceeded. Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
                 retry_delay *= 2  # Exponential backoff
-            except openai.error.OpenAIError as e:
+            except openai.OpenAIError as e:
                 print(f"An error occurred: {e}")
                 break
 
