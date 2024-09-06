@@ -1,5 +1,6 @@
 import os
 import openai
+import time
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from dotenv import load_dotenv
@@ -28,49 +29,62 @@ class AzureOpenAIChat:
         """
         return openai.AzureOpenAI(
             azure_endpoint=self.endpoint,
-            azure_api_key=self.api_key,
+            api_key=self.api_key,
             api_version="2024-05-01-preview",
         )
 
     def get_completion(self, user_message):
         """
         Send a user message to the OpenAI API and return the completion.
+        Implement retry mechanism with exponential backoff for rate limit errors.
         """
-        return self.client.chat.completions.create(
-            model=self.deployment,
-            messages=[{
-                "role": "user",
-                "content": user_message
-            }],
-            max_tokens=800,
-            temperature=0,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0,
-            stop=None,
-            stream=False,
-            extra_body={
-                "data_sources": [{
-                    "type": "azure_search",
-                    "parameters": {
-                        "endpoint": f"{self.search_endpoint}",
-                        "index_name": "cv",
-                        "semantic_configuration": "default",
-                        "query_type": "semantic",
-                        "fields_mapping": {},
-                        "in_scope": True,
-                        "role_information": "You are an AI assistant that helps people find information.",
-                        "filter": None,
-                        "strictness": 3,
-                        "top_n_documents": 5,
-                        "authentication": {
-                            "type": "api_key",
-                            "key": f"{self.search_key}"
-                        }
+        max_retries = 5
+        retry_delay = 1  # Initial delay in seconds
+
+        for attempt in range(max_retries):
+            try:
+                return self.client.chat.completions.create(
+                    model=self.deployment,
+                    messages=[{
+                        "role": "user",
+                        "content": user_message
+                    }],
+                    max_tokens=800,
+                    temperature=0,
+                    top_p=1,
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    stop=None,
+                    stream=False,
+                    extra_body={
+                        "data_sources": [{
+                            "type": "azure_search",
+                            "parameters": {
+                                "endpoint": f"{self.search_endpoint}",
+                                "index_name": "cv",
+                                "semantic_configuration": "default",
+                                "query_type": "semantic",
+                                "fields_mapping": {},
+                                "in_scope": True,
+                                "role_information": "You are an AI assistant that helps people find information.",
+                                "filter": None,
+                                "strictness": 3,
+                                "top_n_documents": 5,
+                                "authentication": {
+                                    "type": "api_key",
+                                    "key": f"{self.search_key}"
+                                }
+                            }
+                        }]
                     }
-                }]
-            }
-        )
+                )
+            except openai.error.RateLimitError as e:
+                print(f"Rate limit exceeded. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            except openai.error.OpenAIError as e:
+                print(f"An error occurred: {e}")
+                break
 
     def start_chat(self):
         """
@@ -88,7 +102,8 @@ class AzureOpenAIChat:
                 completion = self.get_completion(user_input)
                 
                 # Print AI response
-                print("AI: ", completion.to_json())
+                if completion:
+                    print("AI: ", completion.choices[0].message.content)
         except KeyboardInterrupt:
             # Handle Ctrl+C gracefully
             print("\nExiting...")
